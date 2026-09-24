@@ -1,4 +1,4 @@
-"""Модуль с автотестами для функционала авторизации SauceDemo."""
+﻿"""Модуль с автотестами для функционала авторизации SauceDemo."""
 import allure
 import pytest
 from selenium.webdriver.remote.webdriver import WebDriver
@@ -34,8 +34,10 @@ class TestLogin:
         with allure.step("Нажать кнопку 'Login'"):
             page.click_login_button()
 
-        with allure.step("Проверить, что вход выполнен успешно"):
+        with allure.step("Проверить наличие списка товаров на странице"):
             assert page.is_inventory_present(), "Список товаров не найден после входа!"
+
+        with allure.step("Проверить, что URL изменился на страницу инвентаря"):
             assert "inventory" in page.get_current_url(), "URL не изменился на /inventory.html!"
 
     @allure.title("Вход в систему с невалидным паролем")
@@ -62,7 +64,11 @@ class TestLogin:
         with allure.step("Нажать кнопку 'Login'"):
             page.click_login_button()
 
-        with allure.step("Проверить появление сообщения об ошибке"):
+        with allure.step("Получить текст сообщения об ошибке"):
             error_message = page.get_error_message()
+
+        with allure.step("Проверить, что сообщение об ошибке не пустое"):
             assert error_message != "", "Сообщение об ошибке не появилось!"
+
+        with allure.step("Проверить содержание сообщения об ошибке"):
             assert "Username and password do not match" in error_message
