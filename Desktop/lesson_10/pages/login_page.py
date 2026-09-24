@@ -1,21 +1,28 @@
-"""Модуль с описанием страниц (Page Objects)."""
+"""Модуль с описанием страницы авторизации SauceDemo (Page Object)."""
 import allure
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webdriver import WebDriver
-from selenium.webdriver.remote.webelement import WebElement
+
 
 class LoginPage:
-    """Page Object для страницы авторизации."""
+    """Page Object для страницы входа в систему SauceDemo."""
 
     def __init__(self, driver: WebDriver) -> None:
+        """Инициализирует LoginPage с драйвером и локаторами.
+        
+        Args:
+            driver: Экземпляр WebDriver для управления браузером.
+        """
         self.driver = driver
         self._username_locator = (By.ID, "user-name")
         self._password_locator = (By.ID, "password")
         self._login_button_locator = (By.ID, "login-button")
+        self._error_locator = (By.CSS_SELECTOR, ".error-message-container")
+        self._inventory_locator = (By.CLASS_NAME, "inventory_list")
 
-    @allure.step("Открыть страницу по URL: {url}")
+    @allure.step("Открыть страницу авторизации по URL: {url}")
     def open_page(self, url: str) -> "LoginPage":
-        """Открывает страницу в браузере.
+        """Открывает страницу входа в браузере.
         
         Args:
             url: Строка с адресом страницы.
@@ -57,14 +64,32 @@ class LoginPage:
         """Нажимает на кнопку входа. Не возвращает значения."""
         self.driver.find_element(*self._login_button_locator).click()
 
-    @allure.step("Проверить наличие элемента на странице")
-    def is_element_present(self, locator: tuple) -> bool:
-        """Проверяет наличие элемента по локатору.
+    @allure.step("Получить текст сообщения об ошибке")
+    def get_error_message(self) -> str:
+        """Возвращает текст сообщения об ошибке авторизации.
         
-        Args:
-            locator: Кортеж с типом локатора и его значением.
-            
+        Returns:
+            Строка с текстом ошибки или пустая строка.
+        """
+        error_elements = self.driver.find_elements(*self._error_locator)
+        if error_elements:
+            return error_elements[0].text
+        return ""
+
+    @allure.step("Проверить наличие элемента инвентаря на странице")
+    def is_inventory_present(self) -> bool:
+        """Проверяет наличие списка товаров после успешного входа.
+        
         Returns:
             True, если элемент найден, иначе False.
         """
-        return len(self.driver.find_elements(*locator)) > 0
+        return len(self.driver.find_elements(*self._inventory_locator)) > 0
+
+    @allure.step("Получить текущий URL страницы")
+    def get_current_url(self) -> str:
+        """Возвращает текущий URL в адресной строке браузера.
+        
+        Returns:
+            Строка с текущим URL.
+        """
+        return self.driver.current_url
